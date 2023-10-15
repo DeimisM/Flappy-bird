@@ -9,18 +9,22 @@ public class Bird : MonoBehaviour
 {
     public float jumpSpeed;
     public float rotatePower;
+    public float speed;
+    public GameObject endScreen;
+    int score = 0;
+
     public TextMeshPro scoreText;
     public AudioClip scoreSound;
-    int score = 0;
     AudioSource source;
-
-
     Rigidbody2D rb;
+
 
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         source = gameObject.AddComponent<AudioSource>();
+        Pipe.speed = speed;
+        endScreen.SetActive(false);
     }
 
     private void Update()
@@ -35,8 +39,23 @@ public class Bird : MonoBehaviour
 
     void Die()
     {
-        var sceneName = SceneManager.GetActiveScene().name;
-        SceneManager.LoadScene(sceneName);
+        Pipe.speed = 0;
+        jumpSpeed = 0;
+        rb.velocity = Vector2.zero;
+        GetComponentInChildren<Animator>().enabled = false;
+        Invoke("ShowMenu", 1f);
+
+        //var sceneName = SceneManager.GetActiveScene().name;
+        //SceneManager.LoadScene(sceneName);
+    }
+
+    void ShowMenu()
+    {
+        endScreen.SetActive(true);
+
+        scoreText.gameObject.SetActive(false);
+        // scoreText.enabled = false;
+        // scoreText.text = "";
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
