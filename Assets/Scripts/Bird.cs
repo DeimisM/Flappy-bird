@@ -4,6 +4,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
+using UnityEngine.UIElements;
 
 public class Bird : MonoBehaviour
 {
@@ -12,64 +13,36 @@ public class Bird : MonoBehaviour
     public float speed;
     public GameObject endScreen;
     int score = 0;
-    int skin;
-    int background;
 
-    public GameObject yellowSkin;
-    public GameObject blueSkin;
-    public GameObject redSkin;
-
-    public GameObject day;
-    public GameObject night;
-
+    public GameObject flashEffect;
 
     public TextMeshPro scoreText;
     public AudioClip scoreSound;
     AudioSource source;
+    public AudioClip hit;
     Rigidbody2D rb;
 
 
     private void Start()
     {
-        // skin
-        yellowSkin.SetActive(false);
-        blueSkin.SetActive(false);
-        redSkin.SetActive(false);
-        // background
-        day.SetActive(false);
-        night.SetActive(false);
-
-
         rb = GetComponent<Rigidbody2D>();
         source = gameObject.AddComponent<AudioSource>();
-        Pipe.speed = speed;
-        endScreen.SetActive(false);
 
-        skin = Random.Range(1, 4);
-        background = Random.Range(1, 3);
-
-        if (skin == 1)
-            yellowSkin.SetActive(true);
-
-        if (skin == 2)
-            blueSkin.SetActive(true);
-
-        if (skin == 3)
-            redSkin.SetActive(true);
-        
-
-        if (background == 1)
-            day.SetActive(true);
-
-        if (background == 2)
-            night.SetActive(true);
+        // Disable gravity and freeze rotation
+        rb.gravityScale = 0;
+        rb.freezeRotation = true;
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
+            // Enable gravity and allow rotation
+            rb.gravityScale = 3;
+            rb.freezeRotation = false;
+
             rb.velocity = Vector2.up * jumpSpeed;
+            Pipe.speed = speed;
         }
 
         transform.eulerAngles = new Vector3(0, 0, rb.velocity.y * rotatePower);
@@ -81,10 +54,10 @@ public class Bird : MonoBehaviour
         jumpSpeed = 0;
         rb.velocity = Vector2.zero;
         GetComponentInChildren<Animator>().enabled = false;
-        Invoke("ShowMenu", 1f);
+        Invoke("ShowMenu", 1f);     // timer
 
-        //var sceneName = SceneManager.GetActiveScene().name;
-        //SceneManager.LoadScene(sceneName);
+        PlayerPrefs.SetInt("Score", score);
+        flashEffect.SetActive(true);
     }
 
     void ShowMenu()
@@ -100,6 +73,7 @@ public class Bird : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         Die();
+        GetComponent<AudioSource>().PlayOneShot(hit);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
